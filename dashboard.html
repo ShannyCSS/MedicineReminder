@@ -107,13 +107,13 @@
         // Get logged-in user
         const user = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
         const username = user.username || '';
-        // Set header to username's Medicine as soon as possible
+
         function setUserMedicineHeader() {
-            const header = document.getElementById('userMedicineHeader');
+         const header = document.getElementById('userMedicineHeader');
             if (header) {
-                header.textContent = username ? `${username}'s Medicine` : 'Medicine';
-            }
-        }
+         header.textContent = 'Medicine';
+    }
+}
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', setUserMedicineHeader);
         } else {
