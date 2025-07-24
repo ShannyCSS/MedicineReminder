@@ -86,13 +86,7 @@
             font-weight: bold;
             margin-top: 12px;
         }
-        .medicine-img {
-            display: block;
-            margin: 0 auto 16px auto;
-            max-width: 120px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(124,58,237,0.08);
-        }
+    
     </style>
 </head>
 <body>
@@ -279,6 +273,7 @@
         if ('Notification' in window) {
             Notification.requestPermission();
         }
+        setUserMedicineHeader();
     </script>
 </body>
 </html>
