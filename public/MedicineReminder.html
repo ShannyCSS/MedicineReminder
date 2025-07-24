@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Medicine Reminder</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #fef9ff;
+      padding: 32px;
+      max-width: 600px;
+      margin: auto;
+    }
+
+    h1, h2 {
+      color: #7c3aed;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 6px 0;
+      border: 1px solid #a78bfa;
+      border-radius: 8px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background: #a78bfa;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 1em;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background: #7c3aed;
+    }
+
+    #result {
+      margin-top: 16px;
+      font-weight: bold;
+      color: #10b981;
+    }
+  </style>
+</head>
+<body>
+<body>
+
+  <h1>Welcome to Medicine Reminder</h1>
+
+  <!-- Section 1: Send Email Immediately -->
+  <h2>Send Reminder Email Now</h2>
+  <input id="email" type="email" placeholder="Recipient Email">
+  <input id="subject" type="text" placeholder="Subject">
+  <textarea id="message" placeholder="Message" rows="5"></textarea>
+  <button onclick="sendEmail()">Send Email</button>
+
+  <div id="result"></div>
+
+  <!-- Section 2: Set Reminder for Later -->
+  <hr style="margin: 32px 0; border: none; border-top: 2px solid #ddd;">
+
+  <h2>Set Medicine Reminder</h2>
+  <input type="text" id="medName" placeholder="Medicine Name"><br>
+  <input type="time" id="medTime"><br>
+  <button onclick="scheduleReminder()">Set Reminder</button>
+
+  <script>
+    function sendEmail() {
+      const email = document.getElementById('email').value.trim();
+      const subject = document.getElementById('subject').value.trim();
+      const message = document.getElementById('message').value.trim();
+      const resultBox = document.getElementById('result');
+
+      if (!email || !subject || !message) {
+        resultBox.style.color = '#dc2626'; // red
+        resultBox.innerText = 'All fields are required.';
+        return;
+      }
+
+      fetch('http://localhost:3000/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: email, subject, text: message })
+      })
+      .then(res => res.text())
+      .then(data => {
+        resultBox.style.color = '#10b981'; // green
+        resultBox.innerText = data;
+        document.getElementById('email').value = '';
+        document.getElementById('subject').value = '';
+        document.getElementById('message').value = '';
+      })
+      .catch(err => {
+        resultBox.style.color = '#dc2626'; // red
+        resultBox.innerText = 'Error sending email: ' + err.message;
+      });
+    }
+
+    function scheduleReminder() {
+      const medicine = document.getElementById('medName').value.trim();
+      const time = document.getElementById('medTime').value;
+
+      if (!medicine || !time) {
+        alert("Please fill out both fields.");
+        return;
+      }
+
+      const user = JSON.parse(localStorage.getItem('loggedInUser'));
+      const email = user?.email;
+
+      if (!email) {
+        alert("No user logged in.");
+        return;
+      }
+
+      fetch('http://localhost:3000/remind', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ medicine, time, email })
+      })
+      .then(res => res.text())
+      .then(msg => alert(msg))
+      .catch(err => alert('Error: ' + err.message));
+    }
+  </script>
+</body>
+</html>

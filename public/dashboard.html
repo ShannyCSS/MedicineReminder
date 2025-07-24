@@ -1,0 +1,112 @@
+node server.js<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard - Medicine Reminder</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      background: #f0f0f0;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    nav a {
+      margin-left: 1rem;
+      text-decoration: none;
+      color: #007BFF;
+    }
+
+    .container {
+      margin-top: 2rem;
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.75rem;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f9f9f9;
+    }
+
+    .note {
+      margin-top: 1rem;
+      font-style: italic;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>📋 Dashboard</h1>
+    <nav>
+      <a href="index.html">Set Reminder</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <h2>Reminders</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Medicine</th>
+          <th>Time</th>
+          <th>Email</th>
+        </tr>
+      </thead>
+      <tbody id="reminderTableBody">
+        <!-- Dynamically filled -->
+      </tbody>
+    </table>
+
+    <p class="note">Note: This sample dashboard does not store reminders permanently unless you implement a database.</p>
+  </div>
+
+  <script>
+    // OPTIONAL: You can add logic here if using localStorage or an API
+    // This part is placeholder. To make it functional, you'd need to add backend support for retrieving reminders.
+    const dummyReminders = JSON.parse(localStorage.getItem('reminders')) || [];
+
+    const tableBody = document.getElementById('reminderTableBody');
+    if (dummyReminders.length > 0) {
+      dummyReminders.forEach(reminder => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${reminder.medicine}</td>
+          <td>${reminder.time}</td>
+          <td>${reminder.email}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    } else {
+      const row = document.createElement('tr');
+      row.innerHTML = `<td colspan="3">No reminders set.</td>`;
+      tableBody.appendChild(row);
+    }
+  </script>
+
+</body>
+</html>

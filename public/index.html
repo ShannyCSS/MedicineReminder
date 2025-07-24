@@ -1,0 +1,97 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Medicine Reminder</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      background: #f4f4f4;
+    }
+    h1 {
+      color: #333;
+    }
+    form {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      max-width: 400px;
+      margin: auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, button {
+      width: 100%;
+      margin-top: 1rem;
+      padding: 0.75rem;
+      font-size: 1rem;
+    }
+    .success, .error {
+      margin-top: 1rem;
+      text-align: center;
+      font-weight: bold;
+    }
+    .success {
+      color: green;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>⏰ Medicine Reminder</h1>
+  <form id="reminderForm">
+    <label for="email">Recipient Email:</label>
+    <input type="email" id="email" required placeholder="example@gmail.com" />
+
+    <label for="medicine">Medicine Name:</label>
+    <input type="text" id="medicine" required placeholder="Paracetamol" />
+
+    <label for="time">Reminder Time:</label>
+    <input type="time" id="time" required />
+
+    <button type="submit">Set Reminder</button>
+    <div id="response" class=""></div>
+  </form>
+
+  <script>
+    const form = document.getElementById('reminderForm');
+    const responseDiv = document.getElementById('response');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value;
+      const medicine = document.getElementById('medicine').value;
+      const time = document.getElementById('time').value;
+
+      try {
+        const res = await fetch('/remind', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, medicine, time })
+        });
+
+        const text = await res.text();
+
+        if (res.ok) {
+          responseDiv.textContent = text;
+          responseDiv.className = 'success';
+        } else {
+          responseDiv.textContent = `❌ ${text}`;
+          responseDiv.className = 'error';
+        }
+      } catch (error) {
+        responseDiv.textContent = '❌ Failed to contact backend.';
+        responseDiv.className = 'error';
+        console.error(error);
+      }
+    });
+  </script>
+
+</body>
+</html>
