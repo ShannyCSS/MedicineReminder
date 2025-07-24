@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f6f0fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #7c3aed;
+            margin-top: 32px;
+        }
+        table {
+            width: 90%;
+            background: #ede9fe;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(124,58,237,0.08);
+        }
+        th, td {
+            padding: 8px 12px;
+            text-align: left;
+        }
+        th {
+            background: #d1c4e9;
+        }
+        tr:nth-child(even) {
+            background: #f3f0fa;
+        }
+    </style>
+</head>
+<body>
+    <h1>Admin Dashboard</h1>
+    <table id="dashboard">
+        <thead>
+            <tr>
+                <th>Action</th>
+                <th>Medicine</th>
+                <th>Dosage</th>
+                <th>Count</th>
+                <th>Time</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <h1>Medicine Progress Dashboard</h1>
+    <table id="progress">
+        <thead>
+            <tr>
+                <th>Medicine</th>
+                <th>Dosage</th>
+                <th>Initial Count</th>
+                <th>Current Count</th>
+                <th>Reminder Time</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <script>
+        function renderDashboard() {
+            const tbody = document.querySelector('#dashboard tbody');
+            tbody.innerHTML = '';
+            const dashboardData = JSON.parse(localStorage.getItem('dashboardData') || '[]');
+            dashboardData.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${row.action}</td><td>${row.name}</td><td>${row.dosage}</td><td>${row.count}</td><td>${row.time}</td><td>${row.date}</td>`;
+                tbody.appendChild(tr);
+            });
+        }
+        function renderProgress() {
+            const tbody = document.querySelector('#progress tbody');
+            tbody.innerHTML = '';
+            const dashboardData = JSON.parse(localStorage.getItem('dashboardData') || '[]');
+            const progressMap = {};
+            dashboardData.forEach(row => {
+                if (!progressMap[row.name]) {
+                    progressMap[row.name] = {
+                        name: row.name,
+                        dosage: row.dosage,
+                        initial: row.count,
+                        current: row.count,
+                        time: row.time
+                    };
+                }
+                if (row.action === 'Added' || row.action === 'Updated') {
+                    progressMap[row.name].initial = row.count;
+                    progressMap[row.name].current = row.count;
+                    progressMap[row.name].dosage = row.dosage;
+                    progressMap[row.name].time = row.time;
+                }
+                if (row.action === 'Taken') {
+                    progressMap[row.name].current = row.count;
+                }
+                if (row.action === 'Removed') {
+                    progressMap[row.name].current = 0;
+                }
+            });
+            Object.values(progressMap).forEach(med => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${med.name}</td><td>${med.dosage}</td><td>${med.initial}</td><td>${med.current}</td><td>${med.time}</td>`;
+                tbody.appendChild(tr);
+            });
+        }
+        window.onload = () => {
+            renderDashboard();
+            renderProgress();
+        };
+    </script>
+</body>
+</html>

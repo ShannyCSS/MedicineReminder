@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicine Reminder</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f6f0fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #7c3aed;
+            margin-top: 32px;
+        }
+        h2 {
+            color: #6d28d9;
+            margin-bottom: 8px;
+        }
+        .container {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(124,58,237,0.10);
+            padding: 32px 24px;
+            margin-top: 24px;
+            width: 370px;
+            border: 2px solid #e9d5ff;
+        }
+        input[type="text"], input[type="number"], input[type="time"] {
+            padding: 8px;
+            margin: 6px 0;
+            border-radius: 8px;
+            border: 1px solid #a78bfa;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            appearance: textfield;
+            -webkit-appearance: none;
+            -moz-appearance: textfield;
+        }
+        button {
+            background: #a78bfa;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            margin: 8px 0;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #7c3aed;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            background: #ede9fe;
+            margin: 6px 0;
+            padding: 8px 12px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        hr {
+            margin: 24px 0;
+            border: none;
+            border-top: 1px solid #d1c4e9;
+        }
+        #status {
+            color: #7c3aed;
+            font-weight: bold;
+            margin-top: 12px;
+        }
+        .medicine-img {
+            display: block;
+            margin: 0 auto 16px auto;
+            max-width: 120px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(124,58,237,0.08);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="images/medicine.png" class="medicine-img" alt="Medicine">
+        <h1>PAX'S MEDICINE</h1>
+        <h2>Medicine Inventory</h2>
+        <input type="text" id="medicineName" placeholder="Medicine name">
+        <input type="number" id="medicineCount" placeholder="Count" min="1">
+        <input type="text" id="medicineDosage" placeholder="Dosage (e.g. 1 tablet)">
+        <input type="time" id="medicineTime" placeholder="Reminder time">
+        <button onclick="addMedicine()">Add Medicine</button>
+        <ul id="inventoryList"></ul>
+        <hr>
+        <button onclick="window.location.href='index.html'" style="background:#a78bfa;color:#fff;border:none;border-radius:8px;padding:8px 16px;margin-bottom:16px;cursor:pointer;">Go to Login</button>
+        <p id="status"></p>
+    </div>
+    <script>
+        // Get logged-in user
+        const user = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+        const username = user.username || '';
+        // Helper keys for per-user storage
+        const inventoryKey = `inventory_${username}`;
+        const dashboardKey = `dashboardData_${username}`;
+        let inventory = [];
+        let dashboardData = [];
+        function saveInventory() {
+            localStorage.setItem(inventoryKey, JSON.stringify(inventory));
+        }
+        function saveDashboard() {
+            localStorage.setItem(dashboardKey, JSON.stringify(dashboardData));
+        }
+        function logAction(action, med) {
+            dashboardData.push({
+                action,
+                name: med.name,
+                dosage: med.dosage,
+                count: med.count,
+                time: med.time || '',
+                date: new Date().toLocaleString()
+            });
+            saveDashboard();
+            renderDashboard();
+        }
+        function renderDashboard() {
+            const tbody = document.querySelector('#dashboard tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            dashboardData.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${row.action}</td><td>${row.name}</td><td>${row.dosage}</td><td>${row.count}</td><td>${row.time}</td><td>${row.date}</td>`;
+                tbody.appendChild(tr);
+            });
+        }
+        function addMedicine() {
+            const name = document.getElementById('medicineName').value.trim();
+            const count = parseInt(document.getElementById('medicineCount').value);
+            const dosage = document.getElementById('medicineDosage').value.trim();
+            const time = document.getElementById('medicineTime').value;
+            const email = user.email || '';
+            if (!name || isNaN(count) || count < 1 || !dosage || !time) {
+                document.getElementById('status').innerText = 'Please fill all fields.';
+                return;
+            }
+            if (!email) {
+                document.getElementById('status').innerText = 'No user email found. Please log in again.';
+                return;
+            }
+            // Check if medicine already exists
+            const existing = inventory.find(med => med.name.toLowerCase() === name.toLowerCase());
+            if (existing) {
+                existing.count += count;
+                existing.dosage = dosage;
+                existing.time = time;
+                logAction('Updated', existing);
+            } else {
+                const med = { name, count, dosage, time };
+                inventory.push(med);
+                logAction('Added', med);
+            }
+            saveInventory();
+            document.getElementById('medicineName').value = '';
+            document.getElementById('medicineCount').value = '';
+            document.getElementById('medicineDosage').value = '';
+            document.getElementById('medicineTime').value = '';
+            document.getElementById('status').innerText = 'Medicine added and reminder set!';
+            setMedicineReminder(name, time, email);
+            renderInventory();
+            // Send reminder info to backend
+            fetch('http://localhost:3000/api/schedule-reminder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, count, dosage, time, email })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('status').innerText = 'Medicine added and email reminder scheduled!';
+                } else {
+                    document.getElementById('status').innerText = 'Medicine added, but failed to schedule email.';
+                }
+            })
+            .catch(() => {
+                document.getElementById('status').innerText = 'Medicine added, but failed to contact backend.';
+            });
+        }
+        function setMedicineReminder(name, time, email) {
+            // This function now only handles browser notifications
+            const now = new Date();
+            const [hours, minutes] = time.split(':');
+            const reminder = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0, 0);
+            let delay = reminder.getTime() - now.getTime();
+            if (delay < 0) delay += 24 * 60 * 60 * 1000; // next day
+            setTimeout(() => {
+                if (Notification.permission === 'granted') {
+                    new Notification(`Time to take your medicine: ${name}`);
+                } else if (Notification.permission !== 'denied') {
+                    Notification.requestPermission().then(permission => {
+                        if (permission === 'granted') {
+                            new Notification(`Time to take your medicine: ${name}`);
+                        } else {
+                            alert(`Time to take your medicine: ${name}`);
+                        }
+                    });
+                } else {
+                    alert(`Time to take your medicine: ${name}`);
+                }
+            }, delay);
+        }
+        function removeMedicine(index) {
+            logAction('Removed', inventory[index]);
+            inventory.splice(index, 1);
+            saveInventory();
+            renderInventory();
+        }
+        function takeDose(index) {
+            if (inventory[index].count > 0) {
+                inventory[index].count--;
+                document.getElementById('status').innerText = 'YEHEY!';
+                logAction('Taken', inventory[index]);
+                saveInventory();
+                renderInventory();
+            }
+        }
+        function renderInventory() {
+            const list = document.getElementById('inventoryList');
+            list.innerHTML = '';
+            inventory.forEach((med, i) => {
+                const li = document.createElement('li');
+                li.innerHTML = `<span>${med.name} (Count: ${med.count})<br>Dosage: ${med.dosage}<br>Reminder: ${med.time}</span>`;
+                const takeBtn = document.createElement('button');
+                takeBtn.textContent = 'Take Dose';
+                takeBtn.style.marginRight = '8px';
+                takeBtn.onclick = () => takeDose(i);
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = 'Remove';
+                removeBtn.onclick = () => removeMedicine(i);
+                li.appendChild(takeBtn);
+                li.appendChild(removeBtn);
+                list.appendChild(li);
+            });
+        }
+        window.onload = function() {
+            // Load per-user inventory and dashboardData
+            if (username) {
+                const savedInventory = localStorage.getItem(inventoryKey);
+                if (savedInventory) inventory = JSON.parse(savedInventory);
+                const savedDashboard = localStorage.getItem(dashboardKey);
+                if (savedDashboard) dashboardData = JSON.parse(savedDashboard);
+            }
+            renderInventory();
+        }
+        if ('Notification' in window) {
+            Notification.requestPermission();
+        }
+    </script>
+</body>
+</html>
